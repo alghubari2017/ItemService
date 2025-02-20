@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  itemservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5001:8080"  # Changed from 80 to 8080
+      - "5002:443"
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Database=ItemDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5673:5672"
+      - "15673:15672"  # Changed from 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+volumes:
+  sqldata:
